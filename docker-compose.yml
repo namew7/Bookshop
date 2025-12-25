@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  mysql-container:
+    image: mysql:8.0
+    container_name: bookshop-mysql
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: bookshop
+      TZ: Asia/Shanghai
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+
+  redis-container:
+    image: redis:alpine
+    container_name: bookshop-redis
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - ./redis-data:/data
+
+  bookshop-app:
+    build: .
+    image: bookshop-server:v1.0
+    container_name: bookshop-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-container
+      - redis-container
+    environment:
+      TZ: Asia/Shanghai
